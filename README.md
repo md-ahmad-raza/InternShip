@@ -1,9 +1,9 @@
-Company : CODETECH IT SOLUTIONS
-Name : Md Ahmad Reza Ansari
-Intern ID : CT4MDR2340
-Domain : Data Analytics
-Duration : 4 months
-Mentor : Neela Santhosh Kumar
+Company : CODETECH IT SOLUTIONS,
+Name : Md Ahmad Reza Ansari,
+Intern ID : CT4MDR2340,
+Domain : Data Analytics,
+Duration : 4 months,
+Mentor : Neela Santhosh Kumar.
 
 Short desctiption of my Tasks:
 
@@ -54,4 +54,25 @@ Big Data Frameworks: PySpark, Dask (Distributed computing).
 BI & Tools: Power BI, Dash by Plotly, Jupyter Notebooks.
 
 Core Competencies: Data Cleaning, ETL Pipelines, Statistical Analysis, and Machine Learning Evaluation (reaching a model accuracy of 93.69% in predictive tasks).
+
+OUTPUTS:
+
+<img width="990" height="396" alt="Image" src="https://github.com/user-attachments/assets/7a8df34c-d9c6-4bd0-b316-ac954f6c5016" />
+<img width="876" height="542" alt="Image" src="https://github.com/user-attachments/assets/10d9356e-9d26-4752-ad46-5fb8224d79ec" />
+<img width="888" height="577" alt="Image" src="https://github.com/user-attachments/assets/9c758b33-0b1f-4fae-9e40-37bfd009218f" />
+<img width="662" height="733" alt="Image" src="https://github.com/user-attachments/assets/6ff75af7-1e6a-49fb-845b-b0b1d1a46362" />
+<img width="727" height="206" alt="Image" src="https://github.com/user-attachments/assets/45acfd10-5d16-474b-a747-3ece3a002329" />
+<img width="553" height="192" alt="Image" src="https://github.com/user-attachments/assets/35f6b60d-f6fa-4827-9b7b-f2bfe67cd2fc" />
+
+<img width="487" height="316" alt="Image" src="https://github.com/user-attachments/assets/6d74d83d-48d6-4120-8c6d-6b6004c876d2" />
+
+<img width="1233" height="567" alt="Image" src="https://github.com/user-attachments/assets/1e84d839-77ef-455f-bc0e-211879d0801b" />
+
+[processed_taxi_sample.csv](https://github.com/user-attachments/files/26328114/processed_taxi_sample.csv)
+
+<img width="1000" height="500" alt="Image" src="https://github.com/user-attachments/assets/d523caaf-3744-4108-8341-f959feb5e5fb" />
+
+<img width="1321" height="750" alt="Image" src="https://github.com/user-attachments/assets/81e9db19-0db6-4476-9abe-9c128c3daaae" />
+
+[Task4.ipynb](https://github.com/user-attachments/files/26328116/Task4.ipynb)
 
