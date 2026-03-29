@@ -74,5 +74,15 @@ OUTPUTS:
 
 <img width="1321" height="750" alt="Image" src="https://github.com/user-attachments/assets/81e9db19-0db6-4476-9abe-9c128c3daaae" />
 
-[Task4.ipynb](https://github.com/user-attachments/files/26328116/Task4.ipynb)
+<img width="1038" height="440" alt="Image" src="https://github.com/user-attachments/assets/2392e4b3-87a1-4682-9c23-72f5c60b52d4" />
+
+<img width="1047" height="517" alt="Image" src="https://github.com/user-attachments/assets/a3ba9a29-3ed6-4a56-b3bb-447b72467e8c" />
+
+<img width="1201" height="586" alt="Image" src="https://github.com/user-attachments/assets/640889f7-eaf3-4813-b447-8840f2f72748" />
+
+<img width="1156" height="352" alt="Image" src="https://github.com/user-attachments/assets/7ca95628-d2c9-4d8e-84f7-c9e20b388871" />
+
+<img width="887" height="748" alt="Image" src="https://github.com/user-attachments/assets/e27354ad-bf54-4b8a-ae3b-0a6da5d2bd4b" />
+
+<img width="1201" height="128" alt="Image" src="https://github.com/user-attachments/assets/8d83fb93-5706-41bf-9d01-d6b34c98f105" />
 
