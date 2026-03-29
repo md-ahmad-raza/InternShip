@@ -13,11 +13,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-
+# Default remote dataset URL used when no input path is provided.
 DEFAULT_URL = "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2023-01.parquet"
 
 
 def download_remote_file(url: str) -> str:
+    # Download a remote Parquet file into a temporary local file.
     parsed = urlparse(url)
     suffix = "" if parsed.path.endswith(".parquet") else ".parquet"
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
@@ -35,6 +36,8 @@ def download_remote_file(url: str) -> str:
 
 
 def load_data(input_path: str, sample_size: int) -> pd.DataFrame:
+    # Load dataset from a local or remote parquet source.
+    # If remote read fails, download the file and read it locally.
     parsed = urlparse(input_path)
     is_remote = parsed.scheme in {"http", "https"}
 
@@ -81,16 +84,21 @@ def load_data(input_path: str, sample_size: int) -> pd.DataFrame:
 
 
 def build_features(df: pd.DataFrame) -> pd.DataFrame:
+    # Convert raw columns into model-ready features.
     df = df.copy()
     df["tpep_pickup_datetime"] = pd.to_datetime(df["tpep_pickup_datetime"], errors="coerce")
     df = df[df["tpep_pickup_datetime"].notna()]
     df = df[df["fare_amount"] > 0]
 
+    # Extract time-based features from the pickup timestamp.
     df["pickup_hour"] = df["tpep_pickup_datetime"].dt.hour
     df["pickup_dayofweek"] = df["tpep_pickup_datetime"].dt.dayofweek
+
+    # Create the target label indicating whether the tip rate is high.
     df["tip_rate"] = df["tip_amount"] / df["fare_amount"]
     df["high_tip"] = (df["tip_rate"] >= 0.25).astype(int)
 
+    # Filter out rows with invalid passenger count or distance.
     df = df[df["trip_distance"] >= 0]
     df = df[df["passenger_count"] > 0]
 
@@ -98,6 +106,7 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def create_pipeline(numeric_features, categorical_features):
+    # Build a preprocessing and classification pipeline.
     numeric_transformer = Pipeline(
         steps=[
             ("imputer", SimpleImputer(strategy="median")),
@@ -130,6 +139,7 @@ def create_pipeline(numeric_features, categorical_features):
 
 
 def evaluate_model(model, X_test, y_test):
+    # Evaluate the trained model using several performance metrics.
     y_pred = model.predict(X_test)
     y_score = model.predict_proba(X_test)[:, 1]
 
@@ -144,6 +154,7 @@ def evaluate_model(model, X_test, y_test):
 
 
 def main(input_path: str, sample_size: int):
+    # Orchestrate the data loading, feature creation, training, and evaluation steps.
     print("=== Predictive Analysis: Taxi Tip Classification ===")
     raw_df = load_data(input_path, sample_size)
     df = build_features(raw_df)

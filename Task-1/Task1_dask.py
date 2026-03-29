@@ -7,7 +7,8 @@ import requests
 import dask.dataframe as dd
 from dask.distributed import Client
 
-
+# Download a remote file to a local temporary path.
+# This helper is used when a remote Parquet URL cannot be read directly by Dask.
 def download_file(url: str) -> str:
     parsed = urlparse(url)
     suffix = os.path.splitext(parsed.path)[1] or ".parquet"
@@ -24,6 +25,8 @@ def download_file(url: str) -> str:
     return temp_file.name
 
 
+# Load a dataset from either a local path or a remote URL.
+# Supports Parquet and CSV/CSV.GZ formats.
 def load_dataset(input_path: str):
     parsed = urlparse(input_path)
     is_remote = parsed.scheme in {"http", "https"}
@@ -31,8 +34,10 @@ def load_dataset(input_path: str):
 
     if is_remote:
         try:
+            # Try to read remote Parquet directly with Dask.
             return dd.read_parquet(input_path), None
         except Exception as exc:
+            # If remote read fails, download locally and retry.
             print(f"Remote read failed, downloading file locally: {exc}")
             temp_file_path = download_file(input_path)
             print(f"Downloaded remote file to {temp_file_path}")
@@ -48,6 +53,8 @@ def load_dataset(input_path: str):
     raise ValueError("Unsupported input format. Use a local or remote .parquet or .csv file.")
 
 
+# Main analysis workflow.
+# Handles connecting to Dask, loading data, validation, metrics, and optional output.
 def main(input_path: str, output_path: str | None, force_csv: bool = False):
     client = Client()
     print(f"Starting Dask client: {client}")
@@ -58,9 +65,11 @@ def main(input_path: str, output_path: str | None, force_csv: bool = False):
     print("== Dataset schema ==")
     print(df.dtypes)
 
+    # Validate required columns exist before proceeding.
     if "tpep_pickup_datetime" not in df.columns or "fare_amount" not in df.columns:
         raise KeyError("Input dataset must contain tpep_pickup_datetime and fare_amount columns.")
 
+    # Remove invalid rows and persist the filtered DataFrame in memory.
     df = df[df["fare_amount"] > 0]
     df = df.persist()
 
@@ -80,6 +89,7 @@ def main(input_path: str, output_path: str | None, force_csv: bool = False):
     print(f"Average total paid: ${avg_stats['total_amount']:.2f}")
 
     print("== Hourly analysis ==")
+    # Extract pickup hour for hourly aggregation.
     df = df.assign(pickup_hour=df["tpep_pickup_datetime"].dt.hour)
     hourly = df.groupby("pickup_hour").agg(
         avg_fare=("fare_amount", "mean"),
@@ -96,6 +106,7 @@ def main(input_path: str, output_path: str | None, force_csv: bool = False):
     print(f"Highest average fare hour: {int(highest_avg_fare_hour['pickup_hour'])} with ${highest_avg_fare_hour['avg_fare']:.2f} average fare")
 
     print("== Weekday vs weekend insight ==")
+    # Create weekday/weekend indicator to compare ride patterns.
     df = df.assign(
         day_of_week=df["tpep_pickup_datetime"].dt.dayofweek,
         is_weekend=(df["tpep_pickup_datetime"].dt.dayofweek >= 5)
@@ -111,8 +122,10 @@ def main(input_path: str, output_path: str | None, force_csv: bool = False):
         print(f"Writing hourly analysis to: {output_path}")
         _, ext = os.path.splitext(output_path)
         if force_csv or ext.lower() == ".csv":
+            # Save the aggregated hourly results as a single CSV file.
             hourly.to_csv(output_path, index=False, single_file=True)
         else:
+            # Save the aggregated results as Parquet.
             dd.from_pandas(hourly, npartitions=1).to_parquet(output_path, engine="pyarrow", write_index=False)
 
     if temp_file_path and os.path.exists(temp_file_path):

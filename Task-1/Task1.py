@@ -7,8 +7,12 @@ import requests
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, hour, avg, count, sum as spark_sum, min as spark_min, max as spark_max, dayofweek
 
+# Standard argument parsing, filesystem, and URL handling imports.
+# requests is used to download remote files if an HTTP(S) URL is provided.
+# PySpark imports provide SparkSession and SQL functions for DataFrame analysis.
 
 def build_spark_session(app_name: str = "BigDataAnalysis_NYC_Taxi"):
+    # Create a Spark session with some default memory and shuffle configurations.
     return SparkSession.builder \
         .appName(app_name) \
         .config("spark.executor.memory", "4g") \
@@ -17,6 +21,7 @@ def build_spark_session(app_name: str = "BigDataAnalysis_NYC_Taxi"):
 
 
 def download_remote_parquet(url: str) -> str:
+    # Download a remote Parquet file to a local temporary file.
     parsed = urlparse(url)
     suffix = os.path.splitext(parsed.path)[1] or ".parquet"
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
@@ -34,6 +39,7 @@ def download_remote_parquet(url: str) -> str:
 
 
 def get_local_input_path(input_path: str) -> tuple[str, bool]:
+    # If the input path is a URL, download it first and return the local file path.
     parsed = urlparse(input_path)
     if parsed.scheme in {"http", "https"}:
         local_path = download_remote_parquet(input_path)
@@ -42,9 +48,11 @@ def get_local_input_path(input_path: str) -> tuple[str, bool]:
 
 
 def main(input_path: str, output_path: str | None):
+    # Set up Spark and reduce log verbosity to show only errors.
     spark = build_spark_session()
     spark.sparkContext.setLogLevel("ERROR")
 
+    # Resolve the input path, downloading remote data if needed.
     local_input_path, downloaded_temp = get_local_input_path(input_path)
     print(f"Loading dataset from: {local_input_path}")
     df = spark.read.parquet(local_input_path)
@@ -52,15 +60,18 @@ def main(input_path: str, output_path: str | None):
     print("== Dataset schema ==")
     df.printSchema()
 
+    # Display a small sample to verify the loaded data structure.
     print("== Sample rows ==")
     df.select("tpep_pickup_datetime", "fare_amount", "tip_amount", "total_amount") \
         .limit(5) \
         .show(truncate=False)
 
     print("== Summary metrics ==")
+    # Filter out invalid records where the fare amount is non-positive.
     df = df.filter(col("fare_amount") > 0)
     df.cache()
 
+    # Compute the overall ride and revenue statistics.
     total_rides = df.count()
     revenue_summary = df.agg(
         spark_sum("fare_amount").alias("total_fare_amount"),
@@ -74,6 +85,7 @@ def main(input_path: str, output_path: str | None):
     print(f"Total passenger charges: ${revenue_summary['total_amount']:.2f}")
 
     print("== Average fares ==")
+    # Compute average values for the main fare-related columns.
     avg_stats = df.select(
         avg("fare_amount").alias("average_fare"),
         avg("tip_amount").alias("average_tip"),
@@ -84,6 +96,7 @@ def main(input_path: str, output_path: str | None):
     print(f"Average total paid: ${avg_stats['average_total']:.2f}")
 
     print("== Hourly analysis ==")
+    # Add a pickup hour column and aggregate metrics by hour of day.
     hourly_df = df.withColumn("pickup_hour", hour(col("tpep_pickup_datetime"))) \
         .groupBy("pickup_hour") \
         .agg(
@@ -95,6 +108,7 @@ def main(input_path: str, output_path: str | None):
 
     hourly_df.show(24)
 
+    # Identify the busiest hour and the hour with the highest average fare.
     busiest_hour = hourly_df.orderBy(col("trip_count").desc()).limit(1)
     highest_avg_fare_hour = hourly_df.orderBy(col("avg_fare").desc()).limit(1)
 
@@ -103,6 +117,7 @@ def main(input_path: str, output_path: str | None):
     highest_avg_fare_hour.show(1)
 
     print("== Weekday vs weekend insight ==")
+    # Compare ride volume and average fare between weekdays and weekends.
     weekday_df = df.withColumn("day_of_week", dayofweek(col("tpep_pickup_datetime"))) \
         .withColumn("is_weekend", (col("day_of_week") >= 6).cast("int")) \
         .groupBy("is_weekend") \
@@ -118,6 +133,7 @@ def main(input_path: str, output_path: str | None):
 
     spark.stop()
 
+    # Clean up any temporary file downloaded from a remote URL.
     if downloaded_temp and os.path.exists(local_input_path):
         try:
             os.remove(local_input_path)
